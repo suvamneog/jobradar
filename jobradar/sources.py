@@ -2,11 +2,14 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import re
 import time
 from typing import Any
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 UA = {"User-Agent": "jobradar/0.1 (personal job tracker)"}
 TIMEOUT = 25
@@ -110,8 +113,25 @@ def fetch_company(entry: dict) -> tuple[list[dict], str | None]:
         for j in jobs:
             j["domain"] = entry.get("domain", "")
         return jobs, None
+    except requests.exceptions.HTTPError as e:
+        status = e.response.status_code if e.response is not None else None
+        reason = f"HTTP {status}" if status is not None else "HTTP error"
+    except requests.exceptions.Timeout:
+        reason = "request timed out"
+    except requests.exceptions.JSONDecodeError:
+        reason = "invalid JSON response"
+    except requests.exceptions.RequestException:
+        reason = "network request failed"
     except Exception as e:  # noqa: BLE001
-        return [], f"{type(e).__name__}: {e}"
+        # Keep unexpected failures diagnosable without echoing URLs, response
+        # bodies, or other values that may contain sensitive information.
+        reason = f"unexpected {type(e).__name__}"
+
+    logger.warning(
+        "ATS fetch failed company=%s source=%s operation=fetch reason=%s",
+        entry.get("name", "?"), board, reason,
+    )
+    return [], f"source={board} operation=fetch reason={reason}"
 
 
 # --------------------------------------------------------------------------

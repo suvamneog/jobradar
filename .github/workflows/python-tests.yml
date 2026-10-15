@@ -1,0 +1,40 @@
+name: Python tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Run test suite (Python 3.11)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Run test suites
+        run: |
+          set -e
+          for test_file in tests/test_*.py; do
+            echo "::group::Running ${test_file}"
+            python "${test_file}"
+            echo "::endgroup::"
+          done

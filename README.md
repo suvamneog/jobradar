@@ -67,6 +67,8 @@ Then three things:
 ./run-web.sh           # http://localhost:8765
 ```
 
+For Windows manual setup instructions and platform limitations, see the [Windows setup guide](docs/windows-setup.md).
+
 ## Configuration
 
 ```yaml

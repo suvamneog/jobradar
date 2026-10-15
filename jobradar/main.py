@@ -36,7 +36,13 @@ PROFILE_CACHE = ROOT / ".resume_profile.json"
 def load_config(path: Path) -> dict:
     if not path.exists():
         sys.exit(f"No config at {path}. Copy config.example.yaml to config.yaml and edit it.")
-    return yaml.safe_load(path.read_text())
+    config = yaml.safe_load(path.read_text())
+    if not isinstance(config, dict):
+        sys.exit(
+            f"Config at {path} is empty or is not a YAML mapping. "
+            "Copy config.example.yaml to config.yaml and edit it."
+        )
+    return config
 
 
 def get_scorer(cfg: dict):
